@@ -1,6 +1,9 @@
 
-// Saraswati Puja poster generator — 1080 x 1920 pixels
-const W = 1080, H = 1920;
+// Saraswati Puja Poster Generator
+// Export size: 1080 x 1350 pixels
+
+const W = 1080;
+const H = 1350;
 const TEMPLATE = "poster-template.jpg";
 
 const canvas = document.getElementById("poster");
@@ -16,7 +19,27 @@ const download = document.getElementById("download");
 canvas.width = W;
 canvas.height = H;
 
+// Create the Company Name field if it is missing from index.html.
+let companyField = document.getElementById("company");
+
+if (!companyField) {
+  const label = document.createElement("label");
+  label.htmlFor = "company";
+  label.textContent = "Company Name";
+
+  companyField = document.createElement("input");
+  companyField.id = "company";
+  companyField.name = "company";
+  companyField.type = "text";
+  companyField.placeholder = "Enter company name";
+  companyField.required = true;
+
+  designationField.insertAdjacentElement("afterend", label);
+  label.insertAdjacentElement("afterend", companyField);
+}
+
 const template = new Image();
+
 let templateReady = false;
 let logoImage = null;
 let generated = false;
@@ -34,23 +57,33 @@ function clearError() {
 function drawPlaceholder() {
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, W, H);
+
   ctx.fillStyle = "#555";
   ctx.textAlign = "center";
-  ctx.font = "bold 32px Arial";
+  ctx.font = "bold 28px Arial";
   ctx.fillText("Loading Saraswati Puja poster...", W / 2, H / 2);
 }
 
 function drawTemplate() {
+  // Fill the 4:5 canvas without stretching the template.
+  // A source with a different ratio will be center-cropped.
   const scale = Math.max(
     W / template.naturalWidth,
     H / template.naturalHeight
   );
 
-  const w = template.naturalWidth * scale;
-  const h = template.naturalHeight * scale;
+  const width = template.naturalWidth * scale;
+  const height = template.naturalHeight * scale;
 
   ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(template, (W - w) / 2, (H - h) / 2, w, h);
+
+  ctx.drawImage(
+    template,
+    (W - width) / 2,
+    (H - height) / 2,
+    width,
+    height
+  );
 }
 
 function fittedSize(text, start, min, maxWidth, weight) {
@@ -58,7 +91,11 @@ function fittedSize(text, start, min, maxWidth, weight) {
 
   while (size > min) {
     ctx.font = `${weight} ${size}px Arial, Helvetica, sans-serif`;
-    if (ctx.measureText(text).width <= maxWidth) break;
+
+    if (ctx.measureText(text).width <= maxWidth) {
+      break;
+    }
+
     size--;
   }
 
@@ -68,9 +105,9 @@ function fittedSize(text, start, min, maxWidth, weight) {
 function drawLogo(img) {
   const box = {
     x: W * 0.32,
-    y: H * 0.065,
+    y: H * 0.045,
     w: W * 0.36,
-    h: H * 0.065
+    h: H * 0.075
   };
 
   const scale = Math.min(
@@ -78,29 +115,32 @@ function drawLogo(img) {
     box.h / img.naturalHeight
   );
 
-  const w = img.naturalWidth * scale;
-  const h = img.naturalHeight * scale;
+  const width = img.naturalWidth * scale;
+  const height = img.naturalHeight * scale;
 
   ctx.drawImage(
     img,
-    box.x + (box.w - w) / 2,
-    box.y + (box.h - h) / 2,
-    w,
-    h
+    box.x + (box.w - width) / 2,
+    box.y + (box.h - height) / 2,
+    width,
+    height
   );
 }
 
-function drawPersonalization(name, designation) {
+function drawPersonalization(name, designation, company) {
   ctx.save();
 
-  // Corrected lower text position based on your reference image.
-  // This white mask clears the old placeholder text.
+  /*
+   * Text layout for 1080 x 1350.
+   * Adjust this clearing rectangle to match the blank area
+   * in your 4:5 poster template.
+   */
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(
-    W * 0.18,
-    H * 0.812,
-    W * 0.64,
-    H * 0.067
+    W * 0.12,
+    H * 0.755,
+    W * 0.76,
+    H * 0.145
   );
 
   ctx.textAlign = "center";
@@ -109,28 +149,44 @@ function drawPersonalization(name, designation) {
 
   // Name
   const nameSize = fittedSize(
-    name, 36, 25, W * 0.78, "700"
+    name, 36, 22, W * 0.80, "700"
   );
 
   ctx.font = `700 ${nameSize}px Arial, Helvetica, sans-serif`;
+
   ctx.fillText(
     name,
-    W * 0.5,
-    H * 0.835,
-    W * 0.78
+    W / 2,
+    H * 0.785,
+    W * 0.80
   );
 
   // Designation
   const designationSize = fittedSize(
-    designation, 30, 18, W * 0.78, "400"
+    designation, 28, 18, W * 0.80, "400"
   );
 
   ctx.font = `400 ${designationSize}px Arial, Helvetica, sans-serif`;
+
   ctx.fillText(
     designation,
-    W * 0.5,
-    H * 0.862,
-    W * 0.78
+    W / 2,
+    H * 0.825,
+    W * 0.80
+  );
+
+  // Company Name
+  const companySize = fittedSize(
+    company, 26, 16, W * 0.80, "600"
+  );
+
+  ctx.font = `600 ${companySize}px Arial, Helvetica, sans-serif`;
+
+  ctx.fillText(
+    company,
+    W / 2,
+    H * 0.865,
+    W * 0.80
   );
 
   ctx.restore();
@@ -139,27 +195,31 @@ function drawPersonalization(name, designation) {
 function render() {
   if (!templateReady) {
     showError(
-      "The poster template did not load. Keep poster-template.jpg beside index.html and refresh."
+      "Poster template not loaded. Keep poster-template.jpg beside index.html."
     );
     return;
   }
 
   const name = nameField.value.trim();
   const designation = designationField.value.trim();
+  const company = companyField.value.trim();
 
-  if (!name || !designation) {
-    showError("Please enter both your name and designation.");
+  if (!name || !designation || !company) {
+    showError(
+      "Please enter your name, designation, and company name."
+    );
     return;
   }
 
   clearError();
+
   drawTemplate();
 
   if (logoImage) {
     drawLogo(logoImage);
   }
 
-  drawPersonalization(name, designation);
+  drawPersonalization(name, designation, company);
 
   generated = true;
   download.disabled = false;
@@ -175,15 +235,18 @@ template.onload = () => {
 template.onerror = () => {
   templateReady = false;
   status.textContent = "• Template not found";
+
   showError(
     "Could not find poster-template.jpg. Check the filename and folder."
   );
+
   drawPlaceholder();
 };
 
 template.src = TEMPLATE;
 drawPlaceholder();
 
+// Logo upload
 logoField.addEventListener("change", () => {
   logoImage = null;
 
@@ -195,7 +258,7 @@ logoField.addEventListener("change", () => {
   }
 
   if (!file.type.startsWith("image/")) {
-    showError("Please choose an image file.");
+    showError("Please select an image file.");
     logoField.value = "";
     return;
   }
@@ -207,7 +270,10 @@ logoField.addEventListener("change", () => {
 
     img.onload = () => {
       logoImage = img;
-      if (generated) render();
+
+      if (generated) {
+        render();
+      }
     };
 
     img.onerror = () => {
@@ -224,22 +290,29 @@ logoField.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
+// Generate poster
 form.addEventListener("submit", event => {
   event.preventDefault();
   render();
 });
 
-[nameField, designationField].forEach(field => {
+// Update preview when text changes
+[nameField, designationField, companyField].forEach(field => {
   field.addEventListener("input", () => {
-    if (generated) render();
+    if (generated) {
+      render();
+    }
   });
 });
 
+// Reset
 document.getElementById("reset").addEventListener("click", () => {
   form.reset();
+
   logoImage = null;
   generated = false;
   download.disabled = true;
+
   clearError();
 
   if (templateReady) {
@@ -253,12 +326,13 @@ document.getElementById("reset").addEventListener("click", () => {
     : "• Loading template";
 });
 
+// Export PNG at exactly 1080 x 1350
 download.addEventListener("click", () => {
   if (!generated) return;
 
   canvas.toBlob(blob => {
     if (!blob) {
-      showError("PNG export failed. Try another browser.");
+      showError("PNG export failed. Please try another browser.");
       return;
     }
 
@@ -270,8 +344,7 @@ download.addEventListener("click", () => {
     ).replace(/[^a-z0-9_-]+/gi, "-");
 
     link.href = url;
-    link.download =
-      `${safeName}-saraswati-puja-1080x1920.png`;
+    link.download = `${safeName}-saraswati-puja-1080x1350.png`;
 
     document.body.appendChild(link);
     link.click();
