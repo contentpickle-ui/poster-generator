@@ -1,40 +1,315 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Saraswati Puja Personalized Poster Generator</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f5f6fa;color:#252525;font-family:Arial,Helvetica,sans-serif}
-main{max-width:1100px;margin:auto;padding:24px 16px 40px}h1{font-size:clamp(1.5rem,4vw,2.1rem);margin:0 0 8px}
-.lead{color:#596273;line-height:1.5;margin:0 0 22px}.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
-.panel{background:#fff;border:1px solid #e1e5ec;border-radius:14px;padding:18px;box-shadow:0 6px 24px #1720330b}
-h2{font-size:1.1rem;margin:0 0 14px}label{display:block;font-weight:700;margin:14px 0 6px}
-input[type=text],input[type=file]{font:inherit;width:100%;padding:11px;border:1px solid #cbd2df;border-radius:8px;background:#fff}
-.help{font-size:.85rem;line-height:1.45;color:#657083}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
-button{border:0;border-radius:8px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer}.primary{background:#b9437c;color:#fff}.secondary{background:#e9edf4;color:#202938}
-button:disabled{opacity:.45;cursor:not-allowed}.preview{background:#edf0f5;padding:12px;border-radius:10px;display:flex;justify-content:center}
-canvas{display:block;width:auto;max-width:100%;max-height:78vh;height:auto;box-shadow:0 3px 15px #0001;background:#fff}
-.status{font-size:.88rem;color:#647084}.error{color:#b42318;font-size:.9rem}.hidden{display:none}
-@media(max-width:760px){.layout{grid-template-columns:1fr}main{padding-top:18px}}
-</style></head>
-<body><main>
-<h1>Saraswati Puja Poster Generator</h1>
-<p class="lead">Enter your name and designation, optionally add your logo, preview the poster, and download a 1080 × 1920 PNG.</p>
-<div class="layout">
-<section class="panel"><h2>Your details</h2>
-<form id="form">
-<label for="name">Name</label><input id="name" type="text" maxlength="70" placeholder="Enter your name" required>
-<label for="designation">Designation</label><input id="designation" type="text" maxlength="90" placeholder="Enter your designation" required>
-<label for="logo">Logo (optional)</label><input id="logo" type="file" accept="image/*">
-<p class="help">Upload a transparent PNG logo to place it in the top area. Leave empty to keep the original top area. Details and logo are processed in your browser only.</p>
-<div class="buttons"><button class="primary" type="submit">Generate poster</button><button class="secondary" id="reset" type="button">Reset</button></div>
-</form><p id="error" class="error hidden" role="alert"></p>
-<p class="help">The supplied poster template is included in this folder as <code>poster-template.jpg</code>.</p>
-</section>
-<section class="panel"><h2>Poster preview <span id="status" class="status">• Loading template</span></h2>
-<div class="preview"><canvas id="poster" width="1080" height="1920"></canvas></div>
-<div class="buttons"><button class="primary" id="download" type="button" disabled>Download PNG · 1080 × 1920</button></div>
-<p class="help">The name and designation are placed in the lower placeholder area between the decorative separators.</p>
-</section></div></main><script src="script.js"></script></body></html>
-<script src="script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Saraswati Puja Poster Generator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f5f9;
+      color: #222;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin: 0 0 28px;
+      color: #666;
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .generator {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 22px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      min-height: 45px;
+      padding: 11px 12px;
+      border: 1px solid #d5d8e0;
+      border-radius: 7px;
+      background: #fff;
+      color: #222;
+      font: inherit;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid #7861d8;
+      outline-offset: 1px;
+      border-color: #7861d8;
+    }
+
+    .help {
+      margin: 6px 0 0;
+      color: #777;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #download {
+      flex: 1;
+      background: #5b42c4;
+      color: #fff;
+    }
+
+    #download:hover {
+      background: #4932a9;
+    }
+
+    #reset {
+      background: #e9eaf0;
+      color: #333;
+    }
+
+    #reset:hover {
+      background: #dcdee7;
+    }
+
+    #status {
+      margin: 16px 0 0;
+      color: #4d4d4d;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #error {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      background: #fff0f0;
+      color: #b42318;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .preview-panel {
+      text-align: center;
+    }
+
+    .preview-frame {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #eee;
+    }
+
+    #poster {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .preview-note {
+      margin: 12px 0 0;
+      color: #777;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    footer {
+      margin-top: 26px;
+      color: #777;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .generator {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .preview-frame {
+        max-width: 360px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Saraswati Puja Poster Generator</h1>
+
+    <p class="subtitle">
+      Personalize your poster and download it as a high-quality PNG.
+    </p>
+
+    <div class="generator">
+
+      <!-- Personalization form -->
+      <section class="panel">
+        <h2>Your Details</h2>
+
+        <form id="form">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Enter your name"
+              maxlength="80"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input
+              type="text"
+              id="designation"
+              name="designation"
+              placeholder="Enter your designation"
+              maxlength="100"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="company">Company Name</label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              placeholder="Enter your company name"
+              maxlength="100"
+              required
+            >
+          </div>
+
+          <p class="help">
+            Your details will appear directly on the poster without a
+            white background behind the text.
+          </p>
+
+          <div class="button-group">
+            <button type="button" id="download">
+              Download Poster PNG
+            </button>
+
+            <button type="button" id="reset">
+              Reset
+            </button>
+          </div>
+
+          <p id="status" role="status" aria-live="polite">
+            Enter your details to personalize the poster.
+          </p>
+
+          <div id="error" role="alert"></div>
+        </form>
+      </section>
+
+      <!-- Poster preview -->
+      <section class="panel preview-panel">
+        <h2>Poster Preview</h2>
+
+        <div class="preview-frame">
+          <canvas
+            id="poster"
+            width="1080"
+            height="1350"
+            aria-label="Personalized Saraswati Puja poster preview"
+          ></canvas>
+        </div>
+
+        <p class="preview-note">
+          Final download resolution: 1080 × 1350 pixels.
+        </p>
+      </section>
+
+    </div>
+
+    <footer>
+      Saraswati Puja Poster Generator
+    </footer>
+  </main>
+
+  <!-- Keep script.js in the same folder as this file -->
+  <script src="script.js"></script>
+</body>
+</html>
